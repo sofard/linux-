@@ -1,0 +1,215 @@
+//登录服务器
+ssh -p (目标机器ssh服务端口号) 用户名@主机地址
+输入密码
+
+[root@sofardvps /]# ls -l
+总用量 135428
+lrwxrwxrwx    1 root root         7 10月 13 18:56 bin -> usr/bin
+dr-xr-xr-x.   6 root root      3072 10月 13 20:23 boot
+drwxr-xr-x    3 root root      4096 10月 13 18:01 data
+drwxr-xr-x   20 root root      3020 1月   8 15:07 dev
+drwxr-xr-x.  78 root root      4096 1月   8 15:07 etc
+drwxr-xr-x.   4 root root      4096 11月  6 17:05 home
+lrwxrwxrwx    1 root root         7 10月 13 18:56 lib -> usr/lib
+lrwxrwxrwx    1 root root         9 10月 13 18:56 lib64 -> usr/lib64
+drwx------.   2 root root     16384 3月  14 2017 lost+found
+drwxr-xr-x.   2 root root      4096 4月  11 2018 media
+drwxr-xr-x.   2 root root      4096 4月  11 2018 mnt
+drwxr-xr-x.   2 root root      4096 4月  11 2018 opt
+dr-xr-xr-x  102 root root         0 1月   8 15:07 proc
+dr-xr-x---.   3 root root      4096 11月 15 19:37 root
+drwxr-xr-x   24 root root       700 1月   8 15:07 run
+lrwxrwxrwx    1 root root         8 10月 13 18:56 sbin -> usr/sbin
+-rw-r--r--    1 root root     21306 10月 13 17:32 shadowsocks-libev_CN.sh
+drwxr-xr-x.   2 root root      4096 4月  11 2018 srv
+-rw-------.   1 root root 138412032 10月 13 17:28 swap
+dr-xr-xr-x   13 root root         0 1月   8 15:07 sys
+drwxrwxrwt.   8 root root    176128 1月   8 15:08 tmp
+drwxr-xr-x.  17 root root      4096 10月 13 20:21 usr
+drwxr-xr-x.  19 root root      4096 10月 13 18:56 var
+
+//[d目录-文件l链接][r读w写x运行-无权限] [计数] [文件所有者] [文件所属组] 
+//chgrp [-r] //chown [-r]  //chmod [-r]
+//pwd -P 显示真是物理目录(链接会转为物理)
+//mkdir -m 711 test1 创建test1 目录 权限为711
+//rm [-fir] 文件或者目录 ,i互动模式,r递归删除
+[root@sofardvps ~]# rm -i /tmp/abc
+rm：是否删除普通文件 "/tmp/abc"？y
+//cp [-i询问覆盖 -r递归拷贝]  原始  目的
+//mv [-f-i-u]  原始 目的
+//touch 创建文件
+
+链接,硬链接(别名,类似共享指针),软链接(快捷方式,每个软连接都是独立的文件)
+[root@sofardvps test]# touch f1
+[root@sofardvps test]# ls
+f1
+[root@sofardvps test]# ls -l
+总用量 0
+-rw-r--r-- 1 root root 0 1月   8 16:08 f1
+[root@sofardvps test]# ln f1 f2
+[root@sofardvps test]# ls -l
+总用量 0
+-rw-r--r-- 2 root root 0 1月   8 16:08 f1
+-rw-r--r-- 2 root root 0 1月   8 16:08 f2
+[root@sofardvps test]# ln -s f1 f3
+[root@sofardvps test]# ls -l
+总用量 0
+-rw-r--r-- 2 root root 0 1月   8 16:08 f1
+-rw-r--r-- 2 root root 0 1月   8 16:08 f2
+lrwxrwxrwx 1 root root 2 1月   8 16:09 f3 -> f1
+[root@sofardvps test]# ln f3 f4
+[root@sofardvps test]# ls -li //-i显示inode节点信息
+总用量 0
+4108 -rw-r--r-- 2 root root 0 1月   8 16:08 f1
+4108 -rw-r--r-- 2 root root 0 1月   8 16:08 f2
+6339 lrwxrwxrwx 2 root root 2 1月   8 16:09 f3 -> f1
+6339 lrwxrwxrwx 2 root root 2 1月   8 16:09 f4 -> f1
+
+
+////////////文件查看命令
+// cat tac nl (适合小文件查看,全部显示) // more,less(b,space翻页) //head tail (超大文件查看头尾)
+
+
+////////用户管理
+//useradd [] 用户名
+//userdel [-r] 用户名
+# usermod -s /bin/ksh -d /home/z –g developer sam  //将sam的登录shell,用户主目录 用户组 修改
+//passwd [-l-u锁定解锁用户 -d无口令 -f强迫下次登录修改口令 ]用户名  
+//newgrp 用户组1 ,将自己切换到用户组1,拿到用户组1的权限
+
+相关文件在 /etc/passwd, /etc/shadow, 
+/etc/group
+组名:口令:组标识号:组内用户列表
+/etc/passwd:
+//用户名:口令:用户标识号:组标识号:注释性描述:主目录:登录Shell
+root:x:0:0:root:/root:/bin/bash
+bin:x:1:1:bin:/bin:/sbin/nologin  //伪用户,无法登录,管理系统等
+
+/etc/shadow
+//登录名:加密口令:最后一次修改时间:最小时间间隔:最大时间间隔:警告时间:不活动时间:失效时间:标志
+
+//////用户组管理
+//groupadd [-g 100指定用户组id] 用户组
+//groupdel 用户组
+//groupmod [-g -n 新id] 用户组
+
+///////shell管理,shell命令解释器,系统中有多个shell(权限功能不一样).用户登录的时候会绑定某个shell
+
+
+
+////////磁盘管理
+
+
+
+
+
+//vim基本使用
+打开一个文件
+进入命令模式  i 切换到输入模式,x删除光标字符 : 切换到底层命令模式
+
+输入模式:
+键入:字符按键以及Shift组合，输入普通字符; ENTER，回车键，换行 	Insert，切换光标为输入/替换模式，光标将变成竖线/下划线
+删除: BACK SPACE，退格键，删除光标前一个字符 DEL，删除键，删除光标后一个字符
+移动: 方向键，在文本中移动光标 HOME/END，移动光标到行首/行尾
+	  Page Up/Page Down，上/下翻页
+ESC，退出输入模式，切换到命令模式
+
+//软件包管理器yum
+// yum [options] [command] [package...]
+
+
+
+
+将yum源设置为163 yum，可以提升软件包安装和更新的速度，同时避免一些常见软件版本无法找到。
+
+首先备份/etc/yum.repos.d/CentOS-Base.repo
+[base]
+name=CentOS-$releasever - Base
+mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=os&infra=$infra
+#baseurl=http://mirror.centos.org/centos/$releasever/os/$basearch/
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7
+
+#released updates 
+[updates]
+name=CentOS-$releasever - Updates
+mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=updates&infra=$infra
+#baseurl=http://mirror.centos.org/centos/$releasever/updates/$basearch/
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7
+
+#additional packages that may be useful
+[extras]
+name=CentOS-$releasever - Extras
+mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=extras&infra=$infra
+#baseurl=http://mirror.centos.org/centos/$releasever/extras/$basearch/
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7
+
+#additional packages that extend functionality of existing packages
+[centosplus]
+name=CentOS-$releasever - Plus
+
+
+///
+# mv /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo.backup
+下载对应版本 repo 文件, 放入 /etc/yum.repos.d/ (操作前请做好相应备份)
+CentOS5 ：http://mirrors.163.com/.help/CentOS5-Base-163.repo
+CentOS6 ：http://mirrors.163.com/.help/CentOS6-Base-163.repo
+CentOS7 ：http://mirrors.163.com/.help/CentOS7-Base-163.repo
+wget http://mirrors.163.com/.help/CentOS6-Base-163.repo
+mv CentOS6-Base-163.repo CentOS-Base.repo
+运行以下命令生成缓存
+yum clean all
+yum makecache
+
+/////
+配置本地Yum仓库
+
+实现此案例需要按照如下步骤进行。
+
+步骤一：搭建一个本地Yum，将RHEL6光盘手动挂载到/media
+
+命令操作如下所示：
+
+[root@localhost ~]# mount /dev/cdrom /media/
+mount: block device /dev/sr0 is write-protected, mounting read-only
+[root@localhost ~]# mount | tail -1
+/dev/sr0 on /media type iso9660 (ro)
+步骤二：将本地设置为客户端，进行Yum验证
+
+Yum客户端需编辑配置文件，命令操作如下所示：
+
+[root@localhost ~]# cd /etc/yum.repos.d/         //必须在这个路径下
+[root@localhost yum.repos.d]# ls                  //此路径下事先有配置文件的模板
+rhel-source.repo
+
+[root@localhost yum.repos.d]# cp rhel-source.repo rhel6.repo //配置文件必须以.repo结尾
+[root@localhost yum.repos.d]# vim rhel6.repo
+[rhel-6]                                     //中括号里内容要求唯一，但不要出现特殊字符
+name=Red Hat Enterprise Linux 6           //此为描述信息，可以看情况填写
+baseurl=file:///media/                     //此项为yum软件仓库位置，指向光盘挂载点
+enabled=1                                   //此项为是否开启，1为开启0为不开启
+gpgcheck=1                                  //此项为是否检查签名，1为监测0为不检测
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release  //签名认证信息的路径
+
+[root@localhost /]# yum repolist
+Loaded plugins: product-id, refresh-packagekit, security, subscription-manager
+This system is not registered to Red Hat Subscription Management. You can use subscription-manager to register.
+rhel-6                                            | 3.9 kB     00:00 ... 
+rhel-6/primary_db                                  | 3.1 MB     00:00 ... 
+repo id             repo name                                     status
+rhel-6              Red Hat Enterprise Linux 6                    3,690
+repolist: 3,690
+
+/////////////
+
+
+
+
+
+
+
+
+
+
